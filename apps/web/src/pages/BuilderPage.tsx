@@ -13,6 +13,7 @@ import {
 } from '../storage/form-manager';
 import { PreviewModal } from './PreviewModal';
 import { PublishModal } from '../components/PublishModal';
+import { setCloudFormStatus } from '../api/client';
 import {
   CheckCircle2,
   CloudOff,
@@ -239,12 +240,17 @@ export const BuilderPage: React.FC<BuilderPageProps> = ({
           schema={schema}
           status="published"
           onClose={() => setIsPublishOpen(false)}
-          onUpdatePublishSettings={(_settings) => {
+          onUpdatePublishSettings={async (_settings) => {
             saveForm({
               ...schema,
               updatedAt: new Date().toISOString(),
             });
-            showToast('Form Settings Updated', 'Updated publication and share settings.', 'success');
+            try {
+              await setCloudFormStatus(schema.id, _settings.status);
+            } catch {
+              // Local only form, ignore
+            }
+            showToast('Form Settings Updated', `Form is now ${_settings.status.toUpperCase()}.`, 'success');
           }}
         />
       )}

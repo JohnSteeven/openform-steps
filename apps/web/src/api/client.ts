@@ -1,6 +1,6 @@
 import { FormSchema } from '@openform-steps/core';
 
-const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || 'http://localhost:3001';
+const API_BASE = ((import.meta as any).env?.VITE_API_URL as string) || '';
 
 export interface CloudUser {
   id: string;

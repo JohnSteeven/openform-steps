@@ -47,12 +47,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Health check endpoint
-  app.get('/health', async () => ({
+  const healthHandler = async () => ({
     status: 'ok',
     version: '2.0.0',
     service: 'openform-steps-api',
     timestamp: new Date().toISOString(),
-  }));
+  });
+  app.get('/health', healthHandler);
+  app.get('/api/health', healthHandler);
 
   // Mount API route modules
   await app.register(authRoutes, { prefix: '/api/auth' });

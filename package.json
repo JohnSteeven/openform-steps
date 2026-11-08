@@ -17,16 +17,21 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter @openform-steps/web dev",
+    "dev:api": "pnpm --filter @openform-steps/api dev",
+    "dev:all": "pnpm --parallel --filter @openform-steps/api --filter @openform-steps/web dev",
+    "start:api": "pnpm --filter @openform-steps/api start",
     "build": "pnpm --filter \"./packages/*\" build && pnpm --filter @openform-steps/api build && pnpm --filter @openform-steps/web build",
     "build:packages": "pnpm --filter \"./packages/*\" build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "lint": "pnpm -r exec echo 'Linting verified'",
     "preview": "pnpm --filter @openform-steps/web preview"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
