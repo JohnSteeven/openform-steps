@@ -84,3 +84,4 @@ export const FieldPalette: React.FC<FieldPaletteProps> = ({ onAddField }) => {
     </aside>
   );
 };
+

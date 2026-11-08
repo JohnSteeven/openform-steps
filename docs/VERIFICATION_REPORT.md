@@ -98,7 +98,11 @@ dist/assets/vendor-zod.js                  56.39 kB │ gzip: 12.94 kB
 dist/assets/vendor-react.js               210.96 kB │ gzip: 65.89 kB
 ```
 
-### Hyperscale Edge Delivery Economics (Serving Lakhs to Crores of Users)
-- **Zero Compute Costs for Static Delivery**: Because all form editing, condition evaluation, and validation execute client-side, the frontend can be cached at the edge across 300+ CDN PoPs (Cloudflare, Fastly, CloudFront).
-- **Sub-30ms Global TTFB**: Fast first-byte delivery worldwide.
-- **Bandwidth Efficiency**: Serving 10 Lakhs (1,000,000) active users consumes only $\sim 25\text{ GB}$ of edge bandwidth (estimated cost $\approx \$20/\text{month}$). Serving 1 Crore (10,000,000) active users costs $\approx \$150 - \$300/\text{month}$.
+### Edge Delivery & Client-First Architecture
+- **Static Edge Distribution**: Because form editing, condition evaluation, and validation execute client-side in the browser, the compiled frontend application can be statically cached across global CDN edge points of presence (e.g. Cloudflare, Fastly, AWS CloudFront).
+- **Reduced Origin Bandwidth**: Serving pre-compiled static assets offloads traffic from origin infrastructure during high-volume periods.
+- **Realistic Bottlenecks Identified**:
+  - Browser `localStorage` quota ($\sim 5\text{--}10\text{ MB}$ per origin) limits purely local response storage; backend endpoints are recommended for large-scale collection.
+  - Large field counts ($\ge 50$ inputs per view) can impact DOM layout performance; multi-step pagination mitigates this by keeping active DOM nodes low ($\le 15$ inputs per step).
+  - Time-sliced cooperative chunking (`chunkedCsvExport`) ensures main-thread responsiveness during exports.
+

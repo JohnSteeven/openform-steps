@@ -90,3 +90,4 @@ describe('Condition Evaluator', () => {
     expect(evaluateCondition(orCondition, { plan: 'starter', custom_quote: false })).toBe(false);
   });
 });
+

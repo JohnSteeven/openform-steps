@@ -1,113 +1,89 @@
-# Performance and Massive Global Scalability Architecture
+# Performance and Scalability Architecture
 
-This document outlines the performance engineering, static edge delivery, and future hyperscale backend roadmap for **OpenForm Steps**.
-
----
-
-## 1. Executive Summary
-
-OpenForm Steps is designed to serve audiences scaling from thousands to **lakhs and crores (millions to tens of millions) of international users**.
-
-To accomplish this reliably without prohibitive hosting costs, the architecture is **edge-native and client-first**:
-1. **Core Runtime in Browser**: Form rendering, AST condition evaluation, multi-step navigation, and validation run directly in the client runtime without making network hops per step.
-2. **Static Edge CDN Delivery**: All HTML, JavaScript, and CSS bundles are pre-compiled and served via global Content Delivery Networks (CDNs) with points of presence (PoPs) in over 300 cities worldwide.
-3. **Sub-second Global TTFB**: Assets are cached at the edge, reducing server origin load to near zero.
+This document outlines the performance engineering, static edge delivery model, client-side constraints, and future backend scaling blueprints for **OpenForm Steps**.
 
 ---
 
-## 2. Core Web Vitals Performance Targets
+## 1. Architectural Philosophy: Edge Delivery & Client-First Execution
 
-The web application and embeddable React components are benchmarked against Google Core Web Vitals (75th percentile):
+OpenForm Steps is designed to minimize origin server load and runtime latency:
 
-| Metric | Target | OpenForm Steps Production Achievement | Optimization Strategy |
-|---|---|---|---|
-| **LCP** (Largest Contentful Paint) | $\le 2.5\text{ s}$ | **$\sim 0.6\text{ - }0.9\text{ s}$** on 4G | Route-based lazy loading, inlined critical CSS, zero external fonts |
-| **INP** (Interaction to Next Paint) | $\le 200\text{ ms}$ | **$\sim 20\text{ - }45\text{ ms}$** | Cooperative chunked time-slicing, minimal re-render tree |
-| **CLS** (Cumulative Layout Shift) | $\le 0.1$ | **$0.00$** | Explicit dimension containers, reserve space for progress indicator |
-| **Renderer Bundle Size** | $\le 50\text{ kB}$ | **$\approx 32\text{ kB}$ gzipped** | Modular monorepo tree-shaking, manual Rollup chunks |
+1. **Client-Side Core Execution**:
+   - Form schema validation (via Zod), Abstract Syntax Tree (AST) condition evaluation, and multi-step state machine transitions execute directly in the browser JavaScript runtime.
+   - Users do not make round-trip HTTP requests to an origin server simply to validate fields, toggle conditional questions, or move between steps.
+2. **Static Edge CDN Delivery**:
+   - The compiled frontend application (`apps/web`) consists solely of static assets (`.html`, `.js`, `.css`, SVG assets) that can be cached and distributed across Content Delivery Networks (CDNs) like Cloudflare, Fastly, AWS CloudFront, or Vercel Edge.
+   - Caching immutable hashed chunks at edge PoPs reduces origin server bandwidth to near zero for repeat visitors.
 
 ---
 
-## 3. CDN Edge Delivery & Global Caching Specification
+## 2. Realistic Scalability Considerations & Bottlenecks
 
-### Caching Headers Matrix
+Rather than claiming unlimited capacity or providing speculative hosting cost figures, the following technical constraints and bottlenecks should be accounted for in production:
 
-When deploying the static build to Cloudflare Pages, Vercel, Netlify, or AWS CloudFront + S3, configure the following response headers:
+### A. Client-Side Browser Storage Quotas
+- OpenForm Steps persists drafts and simulated test responses in browser `localStorage`.
+- **Constraint**: Most modern desktop and mobile browsers enforce a quota of approximately **5 MB to 10 MB** of `localStorage` per origin.
+- **Recommendation**: For production applications collecting thousands of real user submissions, integrate a stateless backend submission endpoint or cloud database rather than relying on browser local storage.
 
-```http
-# 1. HTML Entry Point (Must revalidate to guarantee instant releases)
-/index.html
-  Cache-Control: public, max-age=0, must-revalidate
+### B. DOM Tree Size and Rendering Performance
+- Rendering more than 50 complex interactive fields simultaneously on low-powered mobile devices can increase layout calculation times and memory consumption.
+- **Built-in Mitigation**: OpenForm Steps addresses this through its **multi-step architecture**. Splitting large forms into 3–5 focused steps keeps active DOM node counts low ($\le 15$ inputs per step) and preserves smooth interaction responsiveness (INP).
 
-# 2. Immutable Fingerprinted Chunks (JS, CSS, SVGs)
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-  Access-Control-Allow-Origin: *
+### C. Large Dataset Exports
+- Serializing tens of thousands of records on the main JavaScript thread can block browser event loops.
+- **Built-in Mitigation**: The core engine provides `chunkedCsvExport()`, which batches rows in increments of 200 and yields control to the browser micro/macrotask queues (`setTimeout(resolve, 0)`), preventing browser "Page Unresponsive" dialogs.
 
-# 3. Security Headers
-/*
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: SAMEORIGIN
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+### D. CDN & Edge Limitations
+- While static assets benefit from high edge cache hit ratios ($>95\%$), real-world performance depends on:
+  - User geographic proximity to the nearest CDN edge node.
+  - CDN plan traffic tiers and egress bandwidth allowances.
+  - Cache purge policies on new version deployments (managed via `Cache-Control: public, max-age=0, must-revalidate` on `index.html` and `max-age=31536000, immutable` on content-hashed assets).
+
+---
+
+## 3. Verified Build Output Metrics
+
+Measurements produced by the production build (`vite v8.3.6` with Rolldown):
+
+```text
+Asset Distribution:
+dist/index.html                             1.58 kB │ gzip:  0.77 kB
+dist/assets/index.css                      32.66 kB │ gzip:  7.00 kB
+dist/assets/rolldown-runtime.js             0.59 kB │ gzip:  0.36 kB
+dist/assets/PreviewModal.js                 4.49 kB │ gzip:  1.42 kB
+dist/assets/ResponsesPage.js                6.10 kB │ gzip:  2.06 kB
+dist/assets/ExamplesPage.js                 7.14 kB │ gzip:  2.36 kB
+dist/assets/DocsPage.js                    13.32 kB │ gzip:  3.91 kB
+dist/assets/TemplatesPage.js               18.62 kB │ gzip:  6.26 kB
+dist/assets/BuilderPage.js                 53.82 kB │ gzip:  9.68 kB
+dist/assets/vendor-icons.js                21.01 kB │ gzip:  7.85 kB
+dist/assets/vendor-zod.js                  56.39 kB │ gzip: 12.94 kB
+dist/assets/vendor-react.js               210.96 kB │ gzip: 65.89 kB
+
+Build Duration: 657ms (client bundle)
+Package Output: @openform-steps/core: 18.62 kB (gzip: 5.21 kB)
 ```
 
-### Edge Scalability Economics
+---
 
-| Monthly Active Users | Page Views (est.) | Origin Bandwidth (CDN-Cached) | Est. CDN Cost (Cloudflare / Fastly) |
-|---|---|---|---|
-| **10,000** | 100,000 | $< 1\text{ GB}$ (99.2% Cache Hit) | \$0 / month (Free Tier) |
-| **10 Lakhs (1,000,000)** | 10,000,000 | $\approx 25\text{ GB}$ | \$20 / month |
-| **1 Crore (10,000,000)** | 100,000,000 | $\approx 250\text{ GB}$ | \$150 - \$300 / month |
+## 4. Performance Targets in Synthetic Testing
 
-Because the form builder and renderer have zero origin compute requirements, scaling to 1 crore visits requires **zero additional servers**.
+In local browser profiling and synthetic performance audits, OpenForm Steps targets:
+
+- **Largest Contentful Paint (LCP)**: Target $\le 2.5\text{ s}$ on simulated 4G mobile profiles. Achieved via route-based lazy loading and pre-inlined critical CSS.
+- **Interaction to Next Paint (INP)**: Target $\le 200\text{ ms}$. Achieved by eliminating synchronous blocking work during step transitions and input events.
+- **Cumulative Layout Shift (CLS)**: Target $\le 0.1$. Achieved by giving explicit container dimensions to progress indicators and step headers.
+
+*Note: These benchmarks reflect local synthetic tests and component-level audits; real-world field metrics (Core Web Vitals) should be monitored via Chrome User Experience Report (CrUX) or real-user monitoring (RUM) upon production deployment.*
 
 ---
 
-## 4. Main-Thread Optimization: Chunked Time-Slicing
+## 5. Backend Integration Blueprint for High-Traffic Deployments
 
-When users or administrators export large batches of form submissions (e.g., 50,000 submissions into CSV):
-- Naive string concatenation blocks the browser event loop for several seconds, freezing the UI and triggering browser "Page Unresponsive" warnings.
-- OpenForm Steps implements `chunkedCsvExport`:
-  - Batches records in chunks of 200.
-  - Escapes cells safely against CSV injection (`=`, `+`, `-`, `@`).
-  - Yields to the browser's macro-task queue using `setTimeout(resolve, 0)` or `requestIdleCallback`.
-  - Maintains responsive framerates and allows UI progress bars to update smoothly.
+When transitioning from client-only operation to centralized data collection:
 
----
-
-## 5. Hyperscale Serverless Backend Architecture (Future Scale Blueprint)
-
-For users who wish to connect a centralized cloud backend to collect submissions from millions of visitors, use this recommended architecture:
-
-```mermaid
-flowchart LR
-    A["End Users (Global)"] -->|HTTPS| B["Cloudflare / Fastly CDN Edge"]
-    B -->|WAF & Turnstile Bot Check| C["Edge Submission API (Worker / Lambda)"]
-    C -->|Rate Limit Token Bucket| D["Redis Cluster"]
-    C -->|Asynchronous Push| E["Kafka / AWS SQS / BullMQ"]
-    E -->|Batch Ingestion Workers| F[("PostgreSQL / Spanner Database")]
-    E -->|Dead Letter Queue| G["DLQ Monitoring"]
-```
-
-### Components
-
-1. **Edge API Ingestion**:
-   - Lightweight serverless functions (Cloudflare Workers or AWS Lambda@Edge) running at the CDN edge.
-   - Validates submission payload against the form's Zod schema in $< 10\text{ ms}$.
-   - Fast return of `202 Accepted` with a tracking ID.
-
-2. **Abuse Prevention & Rate Limiting**:
-   - **Sliding-window rate limiter**: Redis token bucket (e.g. 10 submissions per minute per IP).
-   - **Honeypot fields**: Hidden inputs that reject bot submissions if populated.
-   - **Cloudflare Turnstile**: Accessible, invisible CAPTCHA alternative.
-
-3. **Message Queue Buffering**:
-   - During flash events (e.g. concert registration, flash sale lead gen), direct database writes will exhaust connection pools.
-   - The edge handler drops the validated payload into **Apache Kafka** or **AWS SQS FIFO Queue**.
-   - Workers consume from the queue in controlled batches of 500 records.
-
-4. **Database Indexing**:
-   - Primary key: `(form_id, submission_id)`
-   - Composite index: `CREATE INDEX idx_form_date ON submissions (form_id, submitted_at DESC);`
-   - Store unstructured answers in binary JSON (`JSONB` in PostgreSQL, Document attribute in DynamoDB).
+1. **Stateless Ingestion Endpoints**: Deploy lightweight edge functions (e.g. Cloudflare Workers, AWS Lambda@Edge) that validate submission schemas in memory using `@openform-steps/core` before acknowledging receipt.
+2. **Buffering with Message Queues**: Insert submissions into an asynchronous queue (e.g. AWS SQS, Apache Kafka, or Redis Streams) to absorb traffic spikes without overwhelming database connection pools.
+3. **Database Indexing**: Store submission records in PostgreSQL (with JSONB) or distributed document stores with indexed composite keys: `(form_id, submitted_at DESC)`.
+4. **Abuse Mitigation**: Implement rate limiting (e.g., token bucket per IP/client token) and consider accessible bot checks (e.g., Cloudflare Turnstile or honeypot fields).

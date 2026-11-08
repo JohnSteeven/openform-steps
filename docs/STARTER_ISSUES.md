@@ -38,3 +38,4 @@ These are genuine, vetted issues and planned enhancements designed for open-sour
 - **Difficulty**: Beginner
 - **Package**: `@openform-steps/react`, `@openform-steps/web`
 - **Goal**: Add `@media print` CSS rules so that submitting a form or viewing response details can be cleanly exported or printed to PDF without extraneous UI controls, sidebars, or dark backgrounds.
+

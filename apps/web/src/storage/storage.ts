@@ -83,3 +83,4 @@ export function setThemePreference(theme: 'light' | 'dark'): void {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {}
 }
+

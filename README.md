@@ -20,7 +20,7 @@ Official Repository: [https://github.com/JohnSteeven/openform-steps](https://git
 - **12 Supported Field Types**: Text, Email, Number, Telephone, Date, Textarea, Dropdown Select, Radio Choices, Multi-Select Checkboxes, Star Rating, Consent & Terms, and Section Content/Headings.
 - **Dynamic Conditional Branching**: Show or hide fields dynamically, or skip/route entire form steps based on prior answers.
 - **100% Client-Side Privacy**: Runs completely in the browser sandbox. Drafts and simulated responses save locally by default without tracking or third-party cookies.
-- **Engineered for Hyperscale**: Static edge CDN delivery model capable of serving lakhs to crores of visits with sub-second global TTFB and minimal hosting overhead.
+- **Edge-Ready Static Architecture**: Pre-compiled static frontend designed for global CDN caching, minimizing origin server overhead and enabling fast initial page delivery.
 - **Time-Sliced Chunked Export**: Export thousands of submissions to sanitized CSV without freezing the UI thread (INP $< 200\text{ ms}$).
 - **Pre-Built Template Gallery**: Customer Satisfaction (CSAT), Job Application, Event Registration, Patient Medical Intake, B2B Lead Gen, and IT Support Ticket.
 - **Undo / Redo History**: Full state history stack in the builder with `Ctrl+Z` and `Ctrl+Y` keyboard shortcuts.
@@ -149,3 +149,4 @@ Check out our curated [Starter Issues](./docs/STARTER_ISSUES.md) if you are look
 ## License
 
 Released under the [MIT License](./LICENSE).
+

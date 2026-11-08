@@ -49,5 +49,6 @@
     "vite-plugin-dts": "^4.4.0",
     "vitest": "^2.1.8",
     "zod": "^3.24.1"
-  }
+  },
+  "packageManager": "pnpm@12.18.0"
 }

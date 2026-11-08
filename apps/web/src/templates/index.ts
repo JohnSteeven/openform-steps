@@ -72,3 +72,4 @@ export const ALL_TEMPLATES: TemplateMetadata[] = [
     schema: itSupportTicketTemplate,
   },
 ];
+

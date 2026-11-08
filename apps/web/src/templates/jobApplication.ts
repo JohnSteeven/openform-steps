@@ -113,3 +113,4 @@ export const jobApplicationTemplate: FormSchema = {
     },
   ],
 };
+

@@ -64,3 +64,4 @@ export function useHistory(initialState: FormSchema, maxDepth = 40) {
     canRedo,
   };
 }
+

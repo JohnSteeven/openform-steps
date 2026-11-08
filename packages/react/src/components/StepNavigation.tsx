@@ -98,3 +98,4 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     </footer>
   );
 };
+

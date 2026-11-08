@@ -30,3 +30,4 @@ export const StepHeader: React.FC<StepHeaderProps> = ({ step, stepNumber, totalS
     </header>
   );
 };
+

@@ -33,3 +33,4 @@ We will acknowledge receipt of your report within 48 hours and work with you to 
 - **No `eval` or dynamic code execution**: Form conditional logic uses a deterministic AST evaluator rather than string evaluation.
 - **Sanitized CSV export**: Leading characters (`=`, `+`, `-`, `@`) in export cells are sanitized to prevent formula injection attacks.
 - **Client-Side Isolation**: By default, no form data is transmitted to external endpoints without explicit user-provided backend integration.
+

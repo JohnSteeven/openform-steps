@@ -204,24 +204,24 @@ const CustomToggleField: React.FC<CustomFieldProps> = ({ field, value, onChange 
           </div>
         </section>
 
-        {/* High Performance and Massive Scale */}
+        {/* High Performance and Scalability Architecture */}
         <section className="p-6 rounded-2xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/30 dark:bg-blue-950/20">
           <div className="flex items-center gap-2 mb-3">
             <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-              High Performance & Massive Global Scalability
+              High Performance & Scalable Edge Architecture
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-            OpenForm Steps was engineered from day one to support scale from thousands to crores of end-users internationally:
+            OpenForm Steps is designed to minimize origin server load and maintain fast, responsive interaction:
           </p>
 
           <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
             <div className="flex items-start gap-3">
               <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-900 dark:text-slate-100">100% Statically Deployable Edge Architecture:</strong>{' '}
-                Because core validation, condition evaluation, and step state transitions execute directly inside the browser sandbox, static assets can be replicated across 300+ edge CDN locations (Cloudflare, Fastly, AWS CloudFront) with sub-30ms TTFB worldwide.
+                <strong className="text-slate-900 dark:text-slate-100">Client-First Execution & CDN Distribution:</strong>{' '}
+                Core validation, condition evaluation, and step state transitions execute directly inside the browser sandbox, allowing static assets to be cached across global CDN edge locations.
               </div>
             </div>
 
@@ -237,15 +237,15 @@ const CustomToggleField: React.FC<CustomFieldProps> = ({ field, value, onChange 
               <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
                 <strong className="text-slate-900 dark:text-slate-100">Chunked Main-Thread Data Exporting:</strong>{' '}
-                Exporting tens of thousands of submissions into CSV or JSON utilizes cooperative time-slicing (`chunkedCsvExport`), ensuring Interaction to Next Paint (INP) remains below 200ms without freezing mobile screens.
+                Exporting large batches of submissions into CSV utilizes cooperative time-slicing (`chunkedCsvExport`), ensuring Interaction to Next Paint (INP) remains below 200ms without freezing mobile screens.
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-900 dark:text-slate-100">Serverless Backend Blueprint (Future Server-Side API):</strong>{' '}
-                When connecting a backend database, implement stateless submission endpoints behind Redis token bucket rate limiters, write submissions asynchronously to Kafka / SQS / BullMQ queues, and write to distributed PostgreSQL or Amazon DynamoDB with indexed `(form_id, submitted_at)`.
+                <strong className="text-slate-900 dark:text-slate-100">Production Backend Blueprint:</strong>{' '}
+                For centralized multi-user submission collection, connect stateless edge functions behind token bucket rate limiters, write submissions asynchronously to message queues (Kafka / SQS / BullMQ), and persist to distributed databases with indexed `(form_id, submitted_at)`.
               </div>
             </div>
           </div>

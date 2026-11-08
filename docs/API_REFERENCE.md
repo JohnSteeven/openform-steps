@@ -54,3 +54,4 @@ The embeddable visual multi-step form editor component.
 - `importFormFromJson(jsonString: string): ImportResult` — Validates and imports a JSON schema string using Zod.
 - `exportResponsesToCsv(schema: FormSchema, submissions: FormSubmission[]): string` — Exports submission records to sanitized CSV.
 - `chunkedCsvExport(schema: FormSchema, submissions: FormSubmission[], onProgress?: (p: number) => void): Promise<string>` — Asynchronous time-sliced CSV export for large datasets.
+

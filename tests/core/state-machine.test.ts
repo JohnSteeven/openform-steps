@@ -82,3 +82,4 @@ describe('Multi-Step State Machine', () => {
     expect(prog2.percentage).toBe(67);
   });
 });
+
