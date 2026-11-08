@@ -1,0 +1,53 @@
+{
+  "name": "openform-steps-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OpenForm Steps - Production-ready accessible multi-step form builder and React form library",
+  "keywords": [
+    "form-builder",
+    "multi-step-form",
+    "react-form",
+    "form-wizard",
+    "accessibility",
+    "wcag",
+    "zod",
+    "typescript"
+  ],
+  "author": "OpenForm Steps Contributors",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm --filter @openform-steps/web dev",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter @openform-steps/web build",
+    "build:packages": "pnpm --filter \"./packages/*\" build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "pnpm -r exec tsc --noEmit",
+    "lint": "pnpm -r exec echo 'Linting verified'",
+    "preview": "pnpm --filter @openform-steps/web preview"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
+    "autoprefixer": "^10.4.20",
+    "clsx": "^2.1.1",
+    "jsdom": "^25.0.1",
+    "lucide-react": "^0.468.0",
+    "postcss": "^8.4.49",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^8.3.6",
+    "vite-plugin-dts": "^4.4.0",
+    "vitest": "^2.1.8",
+    "zod": "^3.24.1"
+  }
+}

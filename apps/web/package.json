@@ -1,0 +1,36 @@
+{
+  "name": "@openform-steps/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production demonstration website, visual form builder, and interactive documentation for OpenForm Steps",
+  "author": "OpenForm Steps Contributors",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openform-steps/core": "workspace:*",
+    "@openform-steps/react": "workspace:*",
+    "@openform-steps/builder": "workspace:*",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
+    "tailwind-merge": "^2.5.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^8.3.6"
+  }
+}
