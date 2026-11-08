@@ -17,7 +17,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter @openform-steps/web dev",
-    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter @openform-steps/web build",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter @openform-steps/api build && pnpm --filter @openform-steps/web build",
     "build:packages": "pnpm --filter \"./packages/*\" build",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -10,10 +10,11 @@ import {
   exportFormToJson,
   importFormFromJson,
 } from '@openform-steps/core';
-import { FormRenderer } from '@openform-steps/react';
+import { FormRenderer, ConfirmationDialog } from '@openform-steps/react';
 import { FormBuilder } from '@openform-steps/builder';
 import { ALL_TEMPLATES } from '../apps/web/src/templates';
 import { loadSavedDraft, saveDraft, saveSubmission, loadSubmissions, clearSubmissions } from '../apps/web/src/storage/storage';
+import { createNewForm, duplicateForm, deleteForm, getAllForms } from '../apps/web/src/storage/form-manager';
 
 describe('Comprehensive Verification: Form Builder, Preview & Interaction Smoke Test', () => {
   it('1. Tests creating a form with multiple steps, required fields, dropdowns, and conditional logic', () => {
@@ -194,5 +195,72 @@ describe('Comprehensive Verification: Form Builder, Preview & Interaction Smoke 
       expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ req_text: 'Filled In' }));
       expect(screen.getByText(/Thank You!/i)).toBeInTheDocument();
     });
+  });
+
+  it('7. Tests Accessible ConfirmationDialog focus management and safe cancellation', () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+
+    const { rerender } = render(
+      <ConfirmationDialog
+        isOpen={true}
+        title="Delete Step Confirmation"
+        description="Are you sure you want to delete this step?"
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Step"
+        variant="danger"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+
+    // Verify dialog accessibility attributes
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByText('Delete Step Confirmation')).toBeInTheDocument();
+
+    // Escape key handling
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalled();
+
+    // Click confirm button
+    fireEvent.click(screen.getByText('Yes, Delete'));
+    expect(onConfirm).toHaveBeenCalled();
+
+    // Safe close
+    rerender(
+      <ConfirmationDialog
+        isOpen={false}
+        title="Delete Step Confirmation"
+        description="Are you sure you want to delete this step?"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('8. Tests Multi-Form Manager persistence, duplication, and deletion', () => {
+    // 1. Create a form
+    const f1 = createNewForm('Project Alpha Questionnaire');
+    expect(f1.id).toBeDefined();
+    expect(f1.title).toBe('Project Alpha Questionnaire');
+
+    // 2. Duplicate it
+    const f2 = duplicateForm(f1.id);
+    expect(f2.title).toBe('Project Alpha Questionnaire (Copy)');
+    expect(f2.id).not.toBe(f1.id);
+
+    // 3. List all forms
+    const forms = getAllForms();
+    expect(forms.some((f) => f.id === f1.id)).toBe(true);
+    expect(forms.some((f) => f.id === f2.id)).toBe(true);
+
+    // 4. Delete f1
+    const nextActive = deleteForm(f1.id);
+    expect(nextActive).toBeDefined();
+    const formsAfterDelete = getAllForms();
+    expect(formsAfterDelete.some((f) => f.id === f1.id)).toBe(false);
   });
 });

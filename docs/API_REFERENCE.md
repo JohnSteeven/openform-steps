@@ -1,6 +1,6 @@
-# Public API Reference
+# Public API & REST Reference
 
-## `@openform-steps/react`
+## 1. `@openform-steps/react`
 
 ### `<FormRenderer />`
 
@@ -23,7 +23,26 @@ The primary component for rendering accessible multi-step forms.
 
 ---
 
-## `@openform-steps/builder`
+### `<ConfirmationDialog />`
+
+An accessible replacement for native `window.confirm()` and `window.alert()`.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `isOpen` | `boolean` | *Required* | Whether the dialog is visible. |
+| `title` | `string` | *Required* | Accessible modal heading. |
+| `description` | `string` | *Required* | Detailed explanatory text. |
+| `confirmLabel` | `string` | `'Confirm'` | Label for primary confirmation button. |
+| `cancelLabel` | `string` | `'Cancel'` | Label for cancellation button. |
+| `variant` | `'danger' \| 'warning' \| 'info'` | `'danger'` | Visual accent styling. |
+| `onConfirm` | `() => void` | *Required* | Callback invoked on confirm. |
+| `onCancel` | `() => void` | *Required* | Callback invoked on cancel or `Escape`. |
+
+---
+
+## 2. `@openform-steps/builder`
 
 ### `<FormBuilder />`
 
@@ -40,7 +59,7 @@ The embeddable visual multi-step form editor component.
 
 ---
 
-## `@openform-steps/core`
+## 3. `@openform-steps/core`
 
 ### Helper Functions
 
@@ -55,3 +74,28 @@ The embeddable visual multi-step form editor component.
 - `exportResponsesToCsv(schema: FormSchema, submissions: FormSubmission[]): string` — Exports submission records to sanitized CSV.
 - `chunkedCsvExport(schema: FormSchema, submissions: FormSubmission[], onProgress?: (p: number) => void): Promise<string>` — Asynchronous time-sliced CSV export for large datasets.
 
+---
+
+## 4. `@openform-steps/api` REST Endpoints
+
+### Authentication
+- `POST /api/auth/register` — Create new user account (`email`, `password`, `name`).
+- `POST /api/auth/login` — Sign in and receive bearer token.
+- `GET /api/auth/me` — Inspect profile of current authenticated user.
+- `POST /api/auth/logout` — Terminate session.
+
+### Form Management (Bearer Token Required)
+- `GET /api/forms` — List cloud forms owned by authenticated user.
+- `POST /api/forms` — Create a new cloud form.
+- `GET /api/forms/:id` — Retrieve cloud form by ID (isolated to owner).
+- `PUT /api/forms/:id` — Update form title, schema, or quota settings.
+- `PATCH /api/forms/:id/status` — Set status: `draft` | `published` | `closed` | `archived`.
+- `POST /api/forms/:id/duplicate` — Duplicate cloud form.
+- `DELETE /api/forms/:id` — Delete cloud form and cascade-delete submissions.
+- `GET /api/forms/:id/submissions` — Retrieve paginated submissions for form.
+- `GET /api/forms/:id/submissions/export/csv` — Stream formula-safe CSV export.
+- `GET /api/forms/:id/stats` — Retrieve submission count and last response timestamp.
+
+### Public Forms (Visitor Accessible)
+- `GET /api/public/forms/:id` — Fetch published form schema definition. Returns `404` if not found, `403` if draft or closed, and `410` if expired or quota reached.
+- `POST /api/public/forms/:id/submit` — Submit answers to published form. Validates input schema, increments count, and enforces quota limits.

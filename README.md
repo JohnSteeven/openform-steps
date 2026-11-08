@@ -1,29 +1,32 @@
-# OpenForm Steps
+# OpenForm Steps 2.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![React 19.3](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev)
 [![Vite 8.3](https://img.shields.io/badge/Vite-8.3-646cff.svg)](https://vitejs.dev)
 [![Tailwind CSS 4.3](https://img.shields.io/badge/Tailwind-4.3-38bdf8.svg)](https://tailwindcss.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org)
-[![WCAG 2.2 AA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA-success.svg)](./docs/ARCHITECTURE.md)
+[![Fastify](https://img.shields.io/badge/Fastify-5.2-black.svg)](https://fastify.dev)
+[![Target WCAG 2.2 AA](https://img.shields.io/badge/Accessibility-Target%20WCAG%202.2%20AA-success.svg)](./docs/ARCHITECTURE.md)
 
-**OpenForm Steps** is an accessible, production-grade open-source multi-step form builder and React component library. It enables developers and teams to create, customize, and deploy multi-step wizard forms with conditional branching, validation, and zero server lock-in.
+**OpenForm Steps** is an accessible, production-grade open-source form-building platform and React developer library. It provides a visual no-code form builder, a pure TypeScript schema engine, an accessible React renderer, and a turnkey hosted backend service for cloud storage, public URL sharing, and live submission processing.
 
 Official Repository: [https://github.com/JohnSteeven/openform-steps](https://github.com/JohnSteeven/openform-steps)
 
 ---
 
-## Highlights
+## Operating Modes
 
-- **Visual No-Code Form Builder**: Create, edit, duplicate, and reorder steps and fields with drag-and-drop or accessible keyboard controls.
-- **Accessible React Form Renderer (`<FormRenderer />`)**: WCAG 2.2 AA compliant, automated error summary autofocus, screen-reader friendly ARIA landmarks, and high-contrast touch targets $\ge 44 \times 44\text{ px}$.
-- **12 Supported Field Types**: Text, Email, Number, Telephone, Date, Textarea, Dropdown Select, Radio Choices, Multi-Select Checkboxes, Star Rating, Consent & Terms, and Section Content/Headings.
-- **Dynamic Conditional Branching**: Show or hide fields dynamically, or skip/route entire form steps based on prior answers.
-- **100% Client-Side Privacy**: Runs completely in the browser sandbox. Drafts and simulated responses save locally by default without tracking or third-party cookies.
-- **Edge-Ready Static Architecture**: Pre-compiled static frontend designed for global CDN caching, minimizing origin server overhead and enabling fast initial page delivery.
-- **Time-Sliced Chunked Export**: Export thousands of submissions to sanitized CSV without freezing the UI thread (INP $< 200\text{ ms}$).
-- **Pre-Built Template Gallery**: Customer Satisfaction (CSAT), Job Application, Event Registration, Patient Medical Intake, B2B Lead Gen, and IT Support Ticket.
-- **Undo / Redo History**: Full state history stack in the builder with `Ctrl+Z` and `Ctrl+Y` keyboard shortcuts.
+| Feature | Mode A: Free Local-First | Mode B: Hosted Cloud Service |
+|---|---|---|
+| **Account Requirement** | None (instant zero-friction use) | User Registration & JWT Authentication |
+| **Data Storage** | Browser `localStorage` sandbox | SQLite / PostgreSQL via Drizzle ORM |
+| **Form Builder** | Full visual drag-and-drop builder | Full visual drag-and-drop builder |
+| **Multi-Form Workspaces** | Local form switcher & drafts | Cloud forms dashboard & management |
+| **Public URL Sharing** | No (local preview only) | Yes (`/?form=<formId>` public links) |
+| **Visitor Submissions** | Local simulated responses | Live anonymous visitor responses |
+| **Response Limits & Expiry** | Manual | Automated (`maxSubmissions`, `expiresAt`) |
+| **Data Export** | Chunked CSV & JSON export | Chunked CSV & JSON export + API streaming |
+| **Embed Codes** | Static React component snippets | Responsive `<iframe>` & React snippets |
 
 ---
 
@@ -31,26 +34,49 @@ Official Repository: [https://github.com/JohnSteeven/openform-steps](https://git
 
 | Package | Version | Description |
 |---|---|---|
-| [`@openform-steps/core`](./packages/core) | `1.0.0` | Schemas, Zod validation, safe AST evaluator, and multi-step state machine. |
-| [`@openform-steps/react`](./packages/react) | `1.0.0` | Accessible React form rendering components, theme system, and custom field registry. |
+| [`@openform-steps/core`](./packages/core) | `1.0.0` | Schemas, Zod validation, safe AST condition evaluator, and multi-step state machine. |
+| [`@openform-steps/react`](./packages/react) | `1.0.0` | Accessible React form rendering components, theme system, and custom accessible dialogs. |
 | [`@openform-steps/builder`](./packages/builder) | `1.0.0` | Embeddable React form builder component with palette, canvas, and property inspector. |
-| [`@openform-steps/web`](./apps/web) | `1.0.0` | Full demonstration web app, interactive playground, and documentation site. |
+| [`@openform-steps/api`](./apps/api) | `1.0.0` | Fastify REST backend with Drizzle ORM, multi-tenant isolation, and public endpoints. |
+| [`@openform-steps/web`](./apps/web) | `2.0.0` | Production showcase web application with template gallery, cloud dashboard, and docs. |
 
 ---
 
 ## Quick Start
 
-### 1. Installation
+### 1. Developer Setup
 
 ```bash
-# Using pnpm
-pnpm add @openform-steps/core @openform-steps/react
+# Clone the repository
+git clone https://github.com/JohnSteeven/openform-steps.git
+cd openform-steps
 
-# Using npm
-npm install @openform-steps/core @openform-steps/react
+# Install workspace dependencies with pnpm
+pnpm install
+
+# Run type checks across all packages
+pnpm typecheck
+
+# Run automated test suite (51 tests)
+pnpm test
+
+# Build all packages, API, and web application
+pnpm build
 ```
 
-### 2. Render a Multi-Step Form
+### 2. Local Development
+
+```bash
+# Start frontend web application (runs at http://localhost:5173)
+pnpm dev
+
+# In a separate terminal, start backend API (runs at http://localhost:3001)
+pnpm --filter @openform-steps/api dev
+```
+
+---
+
+## React Library Usage
 
 ```tsx
 import React from 'react';
@@ -89,7 +115,7 @@ const schema: FormSchema = {
 
 export function App() {
   const handleSubmit = (data: Record<string, any>) => {
-    console.log('Submission data:', data);
+    console.log('Submission payload:', data);
   };
 
   return (
@@ -102,51 +128,27 @@ export function App() {
 
 ---
 
-## Development & Testing Commands
+## Accessibility & Security Highlights
 
-To run and test the project locally:
-
-```bash
-# Install dependencies across all packages
-pnpm install
-
-# Run the demonstration web app locally
-pnpm dev
-
-# Run Vitest automated test suite
-pnpm test
-
-# Run tests with code coverage report
-pnpm test:coverage
-
-# Run TypeScript typechecks across all packages
-pnpm typecheck
-
-# Build all packages and web app for production
-pnpm build
-```
+- **Targeted for WCAG 2.2 AA**: Tested with automated and keyboard checks. High-contrast touch targets $\ge 44 \times 44\text{ px}$, semantic ARIA landmarks, and focus management.
+- **Pure AST Condition Evaluator**: Zero `eval()` or dynamic code execution.
+- **Formula Injection Defense**: Automatic prepending of single quotes (`'`) to export fields starting with `=`, `+`, `-`, or `@` to neutralize spreadsheet execution.
+- **Multi-Tenant Resource Isolation**: User A can never inspect, modify, or export User B's forms or submissions.
+- **Anonymized IP Hashing**: SHA-256 IP hashing protects visitor privacy while preventing submission spam.
 
 ---
 
-## Accessibility (WCAG 2.2 AA)
+## Documentation
 
-OpenForm Steps is built around accessibility:
-- **Keyboard Traversal**: Every input, button, tab, and dialog is accessible via keyboard alone.
-- **Accessible Error Summary**: If validation fails on submit, keyboard focus automatically jumps to the top `<ErrorSummary />` with direct links to the invalid inputs.
-- **Screen Reader Announcements**: Live region progress bar (`role="progressbar"`), clear error associations (`aria-describedby`), and `aria-required` tags.
-- **Touch Target Size**: All click targets are sized $\ge 44 \times 44\text{ px}$.
-
----
-
-## Contributing & Community
-
-We welcome contributions to OpenForm Steps! Please read our [Contributing Guide](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md).
-
-Check out our curated [Starter Issues](./docs/STARTER_ISSUES.md) if you are looking for a great first contribution.
+- [Architecture Guide](./docs/ARCHITECTURE.md)
+- [Public & REST API Reference](./docs/API_REFERENCE.md)
+- [UI Control Audit](./docs/UI_CONTROL_AUDIT.md)
+- [Performance & Scalability Blueprint](./docs/PERFORMANCE_AND_SCALABILITY.md)
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Security Policy](./SECURITY.md)
 
 ---
 
 ## License
 
-Released under the [MIT License](./LICENSE).
-
+MIT License. See [LICENSE](./LICENSE) for details.

@@ -7,6 +7,7 @@ import {
   createDefaultField,
   createDefaultStep,
 } from '@openform-steps/core';
+import { ConfirmationDialog } from '@openform-steps/react';
 import { useHistory } from '../hooks/useHistory';
 import { FieldPalette } from './FieldPalette';
 import { FieldCanvasItem } from './FieldCanvasItem';
@@ -23,6 +24,8 @@ import {
   Eye,
   Trash2,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export interface FormBuilderProps {
@@ -46,6 +49,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
   const [isFormSettingsOpen, setIsFormSettingsOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
   const [draggedFieldIndex, setDraggedFieldIndex] = useState<number | null>(null);
+  const [stepToDeleteIndex, setStepToDeleteIndex] = useState<number | null>(null);
+  const [stepAlertMessage, setStepAlertMessage] = useState<string | null>(null);
 
   // Notify parent on changes
   useEffect(() => {
@@ -92,22 +97,38 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
     setActiveStepIndex(schema.steps.length);
   };
 
-  const handleDeleteStep = (stepIdx: number) => {
+  const handleRequestDeleteStep = (stepIdx: number) => {
     if (schema.steps.length <= 1) {
-      alert('A form must have at least one step.');
+      setStepAlertMessage('A form must have at least one step.');
       return;
     }
-    if (confirm(`Are you sure you want to delete Step ${stepIdx + 1}?`)) {
-      setSchema((prev) => {
-        const nextSteps = prev.steps.filter((_, i) => i !== stepIdx);
-        return {
-          ...prev,
-          steps: nextSteps,
-          updatedAt: new Date().toISOString(),
-        };
-      });
-      setActiveStepIndex((prev) => Math.max(0, prev - 1));
-    }
+    setStepToDeleteIndex(stepIdx);
+  };
+
+  const handleConfirmDeleteStep = () => {
+    if (stepToDeleteIndex === null) return;
+    const targetIdx = stepToDeleteIndex;
+    setSchema((prev) => {
+      const nextSteps = prev.steps.filter((_, i) => i !== targetIdx);
+      return {
+        ...prev,
+        steps: nextSteps,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+    setActiveStepIndex((prev) => Math.max(0, prev - 1));
+    setStepToDeleteIndex(null);
+  };
+
+  const handleMoveStep = (fromIdx: number, toIdx: number) => {
+    if (toIdx < 0 || toIdx >= schema.steps.length) return;
+    setSchema((prev) => {
+      const nextSteps = [...prev.steps];
+      const [moved] = nextSteps.splice(fromIdx, 1);
+      nextSteps.splice(toIdx, 0, moved);
+      return { ...prev, steps: nextSteps, updatedAt: new Date().toISOString() };
+    });
+    setActiveStepIndex(toIdx);
   };
 
   const handleUpdateStep = (updatedStep: StepSchema) => {
@@ -283,16 +304,43 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {schema.steps.map((step, idx) => {
           const isActive = idx === safeStepIndex;
+          const isFirst = idx === 0;
+          const isLast = idx === schema.steps.length - 1;
+
           return (
             <div
               key={step.id}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 isActive
                   ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 shadow-xs ring-1 ring-blue-600'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300'
               }`}
               onClick={() => setActiveStepIndex(idx)}
             >
+              {schema.steps.length > 1 && (
+                <div className="flex items-center gap-0.5 mr-1" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    disabled={isFirst}
+                    onClick={() => handleMoveStep(idx, idx - 1)}
+                    title="Move step left"
+                    aria-label={`Move step ${idx + 1} left`}
+                    className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer disabled:pointer-events-none"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isLast}
+                    onClick={() => handleMoveStep(idx, idx + 1)}
+                    title="Move step right"
+                    aria-label={`Move step ${idx + 1} right`}
+                    className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer disabled:pointer-events-none"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
               <span>{idx + 1}.</span>
               <span className="max-w-[120px] truncate">{step.title}</span>
               <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
@@ -303,7 +351,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteStep(idx);
+                    handleRequestDeleteStep(idx);
                   }}
                   title="Delete step"
                   aria-label={`Delete step ${idx + 1}`}
@@ -447,6 +495,30 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
           onClose={() => setIsImportExportOpen(false)}
         />
       )}
+
+      {/* Accessible Step Deletion Dialog */}
+      <ConfirmationDialog
+        isOpen={stepToDeleteIndex !== null}
+        title="Delete Form Step"
+        description={`Are you sure you want to delete Step ${(stepToDeleteIndex ?? 0) + 1} ("${schema.steps[stepToDeleteIndex ?? 0]?.title}")? All fields inside this step will be removed.`}
+        confirmLabel="Delete Step"
+        cancelLabel="Keep Step"
+        variant="danger"
+        onConfirm={handleConfirmDeleteStep}
+        onCancel={() => setStepToDeleteIndex(null)}
+      />
+
+      {/* Accessible Minimum Step Alert */}
+      <ConfirmationDialog
+        isOpen={stepAlertMessage !== null}
+        title="Step Action Not Allowed"
+        description={stepAlertMessage || ''}
+        confirmLabel="Understood"
+        cancelLabel="Close"
+        variant="info"
+        onConfirm={() => setStepAlertMessage(null)}
+        onCancel={() => setStepAlertMessage(null)}
+      />
     </div>
   );
 };

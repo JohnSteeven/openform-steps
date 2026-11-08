@@ -4,6 +4,7 @@ export * from './components/ProgressBar';
 export * from './components/StepHeader';
 export * from './components/ErrorSummary';
 export * from './components/StepNavigation';
+export * from './components/ConfirmationDialog';
 export * from './context/FormContext';
 export * from './theme/theme';
 export * from './fields/TextField';
